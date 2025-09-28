@@ -13,7 +13,12 @@ import type { Route } from "./+types/root";
 import { Navbar } from "./components/Navbar";
 import "./app.css";
 
-const theme = createTheme();
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
+
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

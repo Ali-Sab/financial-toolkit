@@ -5,14 +5,14 @@ export function Navbar() {
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography variant="h6" component="div" sx={{ mr: 2 }}>
           Financial Toolkit
         </Typography>
         <Button color="inherit" component={Link} to="/">
           Dashboard
         </Button>
-        <Button color="inherit" component={Link} to="/hello">
-          Hello
+        <Button color="inherit" component={Link} to="/investment-performance">
+          Investments
         </Button>
       </Toolbar>
     </AppBar>
