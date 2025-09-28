@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
@@ -8,7 +6,7 @@ services:
     container_name: financial-backend
 
   frontend:
-    build: ./frontend/my-app
+    build: ./frontend
     ports:
       - "3000:3000"
     container_name: financial-frontend
