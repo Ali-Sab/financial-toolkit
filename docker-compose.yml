@@ -1,8 +1,16 @@
 version: '3.8'
 
 services:
-  financial-app:
+  backend:
     build: ./backend
     ports:
       - "8000:8000"
-    container_name: financial-toolkit
+    container_name: financial-backend
+
+  frontend:
+    build: ./frontend/my-app
+    ports:
+      - "3000:3000"
+    container_name: financial-frontend
+    depends_on:
+      - backend
