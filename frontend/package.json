@@ -1,5 +1,5 @@
 {
-  "name": "Financial Dashboard",
+  "name": "financial-dashboard",
   "private": true,
   "type": "module",
   "scripts": {
