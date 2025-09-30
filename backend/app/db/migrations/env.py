@@ -4,25 +4,16 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
-from app.models.main_model import Base
-
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-user = os.getenv("POSTGRES_USER")
-password = os.getenv("POSTGRES_PASSWORD")
-db = os.getenv("POSTGRES_DB")
-host = os.getenv("POSTGRES_HOST")
-port = os.getenv("POSTGRES_PORT")
-
-DATABASE_URL = f"postgresql+psycopg://{user}:{password}@{host}:{port}/{db}"
-print(DATABASE_URL)
+from app.db import *
+from app.db.sync_session import SYNC_DATABASE_URL
 
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# Inject the URL from sync_session.py
+config.set_main_option("sqlalchemy.url", SYNC_DATABASE_URL)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -53,8 +44,9 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=DATABASE_URL,
+        url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -71,10 +63,8 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    section = config.get_section(config.config_ini_section)
-    section["sqlalchemy.url"] = DATABASE_URL
     connectable = engine_from_config(
-        section,
+        config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
