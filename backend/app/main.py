@@ -1,25 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.routes import health, stocks, transactions
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = FastAPI()
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React dev server
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello World"}
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
-
-@app.get("/stocks")
-def get_stocks():
-    return {"tickers": ["AAPL", "GOOGL", "MSFT", "TSLA", "AMZN"]}
+app.include_router(health.router)
+app.include_router(stocks.router)
+app.include_router(transactions.router)
