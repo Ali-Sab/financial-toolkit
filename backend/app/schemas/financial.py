@@ -19,6 +19,7 @@ class FinancialReport(BaseModel):
     net_profit_data: List[NetProfitEntry]
     dividend_data: List[DividendEntry]
     interest_data: List[InterestEntry]
+    sells: List[object]
     formatted_report: str
 
 class FinancialAnalysisResponse(BaseModel):

@@ -17,6 +17,7 @@ async def process_stock_transactions(file: UploadFile = File(...)):
             net_profit_data=financial_data["net_profit_data"],
             dividend_data=financial_data["dividend_data"],
             interest_data=financial_data["interest_data"],
+            sells=financial_data["sells"],
             formatted_report=financial_data["formatted_report"]
         )
     )

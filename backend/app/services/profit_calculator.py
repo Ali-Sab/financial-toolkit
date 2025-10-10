@@ -13,11 +13,9 @@ class FinancialCalculator:
         for transaction in transactions:
             year = int(transaction.date.year)
             symbol = transaction.symbol
-            amount = transaction.amount
-            shares = transaction.shares
 
             # Skip if shares is None (like for dividends)
-            if shares is None:
+            if transaction.shares is None:
                 continue
 
             if transaction.transaction_type == 'SELL':
@@ -27,29 +25,30 @@ class FinancialCalculator:
                     
                 try:
                     # Use the StockPosition.sell method to calculate cost basis
-                    cost = stock_positions[symbol].sell(shares)
-                    profit = amount - cost
+                    cost = stock_positions[symbol].sell(transaction.shares)
+                    profit = transaction.amount - cost
                     adjusted_cost_basis_sells.append({
                         'stock': symbol, 
-                        'year': year, 
-                        'shares': shares, 
-                        'profit': profit, 
-                        'proceeds': amount, 
-                        'adjusted_cost': cost
+                        'date': transaction.date, 
+                        'transaction.shares': round(transaction.shares, 8),
+                        'transaction_amount': round(transaction.amount, 8),
+                        'profit': round(profit, 8), 
+                        'proceeds': round(transaction.amount, 8), 
+                        'adjusted_cost': round(cost, 8)
                     })
                     
                     # Find existing year entry or create new one
                     year_entry = next((item for item in yearly_net_profit if item['year'] == year and item['stock'] == symbol), None)
                     if year_entry:
-                        year_entry['net_profit'] = round(year_entry['net_profit'] + profit, 2)
+                        year_entry['net_profit'] = round(year_entry['net_profit'] + profit, 8)
                     else:
-                        yearly_net_profit.append({'year': year, 'stock': symbol, 'net_profit': round(profit, 2)})
+                        yearly_net_profit.append({'year': year, 'stock': symbol, 'net_profit': round(profit, 8)})
                 except ValueError as e:
                     logging.warning(f"{e} on {transaction.date}")
             elif transaction.transaction_type == 'BUY':
                 if symbol not in stock_positions:
                     stock_positions[symbol] = StockPosition(symbol)
-                stock_positions[symbol].buy(shares, amount)
+                stock_positions[symbol].buy(transaction.shares, transaction.amount)
 
         return yearly_net_profit, adjusted_cost_basis_sells
 
@@ -66,9 +65,9 @@ class FinancialCalculator:
             # Find existing year/stock entry or create new one
             entry_match = next((item for item in yearly_dividends if item['year'] == year and item['stock'] == stock), None)
             if entry_match:
-                entry_match['dividends'] = round(entry_match['dividends'] + amount, 2)
+                entry_match['dividends'] = round(entry_match['dividends'] + amount, 8)
             else:
-                yearly_dividends.append({'year': year, 'stock': stock, 'dividends': amount})
+                yearly_dividends.append({'year': year, 'stock': stock, 'dividends': round(amount, 8)})
 
         return yearly_dividends
 
@@ -84,9 +83,9 @@ class FinancialCalculator:
             # Find existing year entry or create new one
             year_entry = next((item for item in yearly_interest if item['year'] == year), None)
             if year_entry:
-                year_entry['interest'] = round(year_entry['interest'] + amount, 2)
+                year_entry['interest'] = round(year_entry['interest'] + amount, 8)
             else:
-                yearly_interest.append({'year': year, 'interest': amount})
+                yearly_interest.append({'year': year, 'interest': round(amount, 8)})
         
         return yearly_interest
     

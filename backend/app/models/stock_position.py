@@ -6,7 +6,7 @@ class StockPosition:
         
     def buy(self, shares, cost):
         self.total_cost += abs(cost)
-        self.total_shares = round(self.total_shares + shares, 4)
+        self.total_shares = self.total_shares + shares
         
     def sell(self, shares):
         if shares > self.total_shares:
@@ -18,6 +18,6 @@ class StockPosition:
         
         # Update position
         self.total_cost -= cost_basis
-        self.total_shares = round(self.total_shares - shares, 4)
+        self.total_shares = self.total_shares - shares
         
         return cost_basis

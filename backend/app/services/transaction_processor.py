@@ -8,7 +8,7 @@ def categorize_transaction(line, transactions, dividends, interest, transfers, e
     transaction_date = date.fromisoformat(line[0])
     transaction_type = line[1]
     description = line[2]
-    amount = round(float(line[3]), 4)
+    amount = float(line[3])
     currency = line[-1]  # Currency was appended as the last element
 
     if transaction_type == 'DIV':
@@ -28,7 +28,7 @@ def categorize_transaction(line, transactions, dividends, interest, transfers, e
                 shares = None
                 for i, value in enumerate(values):
                     if i + 2 < len(values) and value == "Transfer" and values[i + 1] == "of":
-                        shares = round(float(values[i + 2]), 4)
+                        shares = float(values[i + 2])
                         break
                 if shares is None:
                     logging.error("Error: 'Transfer' not found or no value after it")
@@ -49,7 +49,7 @@ def categorize_transaction(line, transactions, dividends, interest, transfers, e
             shares = None
             for i, value in enumerate(values):
                 if value in ["Bought", "Sold"] and i + 1 < len(values):
-                    shares = round(float(values[i + 1]), 4)
+                    shares = float(values[i + 1])
                     break
             if shares is None:
                 logging.error("Error: 'Bought' or 'Sold' not found or no value after it")

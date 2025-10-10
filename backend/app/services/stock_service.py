@@ -42,6 +42,7 @@ class StockService:
             "net_profit_data": financial_data['net_profit_data'],
             "dividend_data": financial_data['dividend_data'],
             "interest_data": financial_data['interest_data'],
+            "sells": financial_data['sells'],
             "formatted_report": formatted_report
         }
 
