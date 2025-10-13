@@ -27,6 +27,7 @@ POSTGRES_PASSWORD=pass
 POSTGRES_DB=financial_toolkit
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
+JWT_SECRET_KEY=secretkey123123
 ```
 
 Also make a `.env.local` in the `backend` folder
