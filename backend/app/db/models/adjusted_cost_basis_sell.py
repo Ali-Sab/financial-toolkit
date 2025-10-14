@@ -16,6 +16,6 @@ class AdjustedCostBasisSell(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    financial_account_id = Column(Integer, ForeignKey("financial_accounts.id"), nullable=False)
+    financial_account_id = Column(Integer, ForeignKey("financial_accounts.id", ondelete="CASCADE"), nullable=False)
     financial_account = relationship("FinancialAccount", back_populates="sells")
 

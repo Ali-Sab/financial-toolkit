@@ -3,8 +3,11 @@ import os
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from dotenv import load_dotenv
 
-# Load environment variables from .env
-load_dotenv()
+# Load appropriate env file
+if os.path.exists('.env.local'):
+    load_dotenv('.env.local')
+else:
+    load_dotenv()
 
 DB_USER = os.getenv("POSTGRES_USER", "user")
 DB_PASS = os.getenv("POSTGRES_PASSWORD", "pass")

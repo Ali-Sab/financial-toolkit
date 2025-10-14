@@ -12,7 +12,7 @@ class FinancialAccount(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     user = relationship("User", back_populates="financial_accounts")
-    sells = relationship("AdjustedCostBasisSell", back_populates="financial_account")
+    sells = relationship("AdjustedCostBasisSell", back_populates="financial_account", cascade="all, delete-orphan", passive_deletes=True)
 

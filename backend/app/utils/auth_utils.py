@@ -1,21 +1,26 @@
+import os
 from passlib.context import CryptContext
 from jose import jwt, JWTError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException
-from jose import JWTError, jwt
-from sqlalchemy.orm import Session
-from app.models import User
-from app.db import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
+from app.db import User, get_db, RefreshToken
 from fastapi.security import OAuth2PasswordBearer
+from dotenv import load_dotenv
+
+
+# Load environment variables from .env
+load_dotenv()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-
-SECRET_KEY = "supersecretkey"  # use environment variable in real code
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretkey")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
+REFRESH_TOKEN_EXPIRE_HOURS = 1
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 def hash_password(password: str):
@@ -26,12 +31,39 @@ def verify_password(plain: str, hashed: str):
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+async def create_refresh_token(data: dict, db: AsyncSession):
+    user_id = int(data['sub'])
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(hours=REFRESH_TOKEN_EXPIRE_HOURS)
+    to_encode.update({"exp": expire, "type": "refresh"})
+
+    refresh_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    refresh_token_db = RefreshToken(refresh_token=refresh_token, user_id=user_id, expires_at=expire)
+
+    await db.execute(delete(RefreshToken).where(RefreshToken.user_id == user_id))
+    
+    db.add(refresh_token_db)
+    await db.commit()
+    await db.refresh(refresh_token_db)
+    
+    return refresh_token
+
+async def validate_refresh_token(refresh_token_str: str, db: AsyncSession):
+    refresh_token = await db.execute(select(RefreshToken).where(RefreshToken.refresh_token == refresh_token_str))
+    refresh_token = refresh_token.scalar_one_or_none()
+    if not refresh_token or refresh_token.expires_at < datetime.now(timezone.utc) or refresh_token.revoked is True:
+        if refresh_token:
+            db.delete(refresh_token)
+            await db.commit()
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    return refresh_token.user_id
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -41,7 +73,9 @@ def get_current_user(
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    user = db.query(User).filter_by(id=int(user_id)).first()
+    user_id = int(user_id)
+    user = await db.execute(select(User).where(User.id == user_id))
+    user = user.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
     return user

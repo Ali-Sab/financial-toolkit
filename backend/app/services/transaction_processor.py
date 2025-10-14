@@ -1,6 +1,5 @@
 import logging
 from datetime import date
-from typing import List
 from app.models.transaction import Transaction
 
 def categorize_transaction(line, transactions, dividends, interest, transfers, exchange_rates):
