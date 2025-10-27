@@ -2,23 +2,21 @@ import os
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from app.db import User, get_db, RefreshToken
-from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
+import traceback
 
 
 # Load environment variables from .env
 load_dotenv()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretkey")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
-REFRESH_TOKEN_EXPIRE_HOURS = 1
+REFRESH_TOKEN_EXPIRE_MINUTES = 60
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
@@ -38,7 +36,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 async def create_refresh_token(data: dict, db: AsyncSession):
     user_id = int(data['sub'])
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(hours=REFRESH_TOKEN_EXPIRE_HOURS)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire, "type": "refresh"})
 
     refresh_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -63,14 +61,19 @@ async def validate_refresh_token(refresh_token_str: str, db: AsyncSession):
     return refresh_token.user_id
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+    access_token: str = Cookie(None), db: AsyncSession = Depends(get_db)
 ):
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-    except JWTError:
+    except JWTError as err:
+        print(err)
+        traceback.format_exc()
         raise HTTPException(status_code=401, detail="Invalid token")
 
     user_id = int(user_id)

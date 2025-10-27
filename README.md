@@ -32,3 +32,5 @@ JWT_SECRET_KEY=secretkey123123
 
 Also make a `.env.local` in the `backend` folder
 In this one, set `POSTGRES_HOST=localhost`
+
+Now, initialize the DB with `docker-compose exec backend alembic upgrade head`
