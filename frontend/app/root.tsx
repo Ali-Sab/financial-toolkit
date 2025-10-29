@@ -11,6 +11,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 import type { Route } from "./+types/root";
 import { Navbar } from "./components/Navbar";
+import { AuthProvider } from "./contexts/AuthContext";
 import "./app.css";
 
 const theme = createTheme({
@@ -55,8 +56,10 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Navbar />
-      <Outlet />
+      <AuthProvider>
+        <Navbar />
+        <Outlet />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
