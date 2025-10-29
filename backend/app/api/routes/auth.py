@@ -108,6 +108,6 @@ async def logout(response: Response):
     response.delete_cookie("refresh_token")
     return {"message": "Logged out"}
 
-@router.get("/me")
-async def read_me(current_user: User = Depends(get_current_user)):
-    return {"email": current_user.email, "username": current_user.username, "id": current_user.id}
+@router.get("/auth/session")
+async def get_session(current_user: User = Depends(get_current_user)):
+    return {"email": current_user.email, "username": current_user.username}
