@@ -64,7 +64,10 @@ export function Navbar() {
               <Button color="inherit" component={Link} to="/">
                 Dashboard
               </Button>
-              <Button color="inherit" component={Link} to="/investment-performance">
+              <Button color="inherit" component={Link} to="/accounts">
+                Accounts
+              </Button>
+              <Button color="inherit" component={Link} to="/investments">
                 Investments
               </Button>
             </>

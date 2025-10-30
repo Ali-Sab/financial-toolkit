@@ -33,9 +33,32 @@ async function apiRequest<T>(endpoint: string, options?: RequestInit, retry = tr
   return response.json();
 }
 
+async function uploadFile<T>(endpoint: string, file: File, retry = true): Promise<T> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (response.status === 401 && retry) {
+    await refreshToken();
+    return uploadFile<T>(endpoint, file, false);
+  }
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Upload failed');
+  }
+
+  return response.json();
+}
+
 export const api = {
   get: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'GET' }),
   post: <T>(endpoint: string, body?: unknown) => apiRequest<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
   put: <T>(endpoint: string, body?: unknown) => apiRequest<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   delete: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'DELETE' }),
+  uploadFile: <T>(endpoint: string, file: File) => uploadFile<T>(endpoint, file),
 };
