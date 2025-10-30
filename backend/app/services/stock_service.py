@@ -12,6 +12,13 @@ class StockService:
         return ["AAPL", "GOOGL", "MSFT", "TSLA", "AMZN"]
     
     @staticmethod
+    def log_cls_transactions(transactions: List) -> None:
+        """Log all transactions with symbol 'CLS'."""
+        for transaction in transactions:
+            if hasattr(transaction, 'symbol') and transaction.symbol == 'CLS':
+                logging.info(f"CLS Transaction: {transaction}")
+    
+    @staticmethod
     def process_stock_transactions(allTransactions: List[List[str]]) -> dict:
         """Process stock transactions and return complete financial analysis."""
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -24,6 +31,9 @@ class StockService:
         
         transactions, dividends, interest = process_transactions(allTransactions, exchange_rates)
         logging.info("Processed CSV files")
+        
+        # Log CLS transactions
+        StockService.log_cls_transactions(transactions)
         
         # Calculate all financial data
         logging.info("\n=== Currency: CAD ===")

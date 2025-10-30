@@ -1,4 +1,5 @@
 import os
+import logging
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
@@ -7,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from app.db import User, get_db, RefreshToken
 from dotenv import load_dotenv
-import traceback
+
+logger = logging.getLogger(__name__)
 
 
 # Load environment variables from .env
@@ -72,8 +74,7 @@ async def get_current_user(
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError as err:
-        print(err)
-        traceback.format_exc()
+        logger.error(f"JWT validation error: {err}", exc_info=True)
         raise HTTPException(status_code=401, detail="Invalid token")
 
     user_id = int(user_id)

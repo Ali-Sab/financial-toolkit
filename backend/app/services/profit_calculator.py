@@ -30,19 +30,19 @@ class FinancialCalculator:
                     adjusted_cost_basis_sells.append({
                         'stock': symbol, 
                         'date': transaction.date, 
-                        'transaction.shares': round(transaction.shares, 8),
-                        'transaction_amount': round(transaction.amount, 8),
-                        'profit': round(profit, 8), 
-                        'proceeds': round(transaction.amount, 8), 
-                        'adjusted_cost': round(cost, 8)
+                        'transaction.shares': transaction.shares,
+                        'transaction_amount': transaction.amount,
+                        'profit': profit,
+                        'proceeds': transaction.amount,
+                        'adjusted_cost': cost
                     })
                     
                     # Find existing year entry or create new one
                     year_entry = next((item for item in yearly_net_profit if item['year'] == year and item['stock'] == symbol), None)
                     if year_entry:
-                        year_entry['net_profit'] = round(year_entry['net_profit'] + profit, 8)
+                        year_entry['net_profit'] = round(year_entry['net_profit'] + profit, 8)  # Round accumulation
                     else:
-                        yearly_net_profit.append({'year': year, 'stock': symbol, 'net_profit': round(profit, 8)})
+                        yearly_net_profit.append({'year': year, 'stock': symbol, 'net_profit': profit})
                 except ValueError as e:
                     logging.warning(f"{e} on {transaction.date}")
             elif transaction.transaction_type == 'BUY':
@@ -65,9 +65,9 @@ class FinancialCalculator:
             # Find existing year/stock entry or create new one
             entry_match = next((item for item in yearly_dividends if item['year'] == year and item['stock'] == stock), None)
             if entry_match:
-                entry_match['dividends'] = round(entry_match['dividends'] + amount, 8)
+                entry_match['dividends'] = round(entry_match['dividends'] + amount, 8)  # Round accumulation
             else:
-                yearly_dividends.append({'year': year, 'stock': stock, 'dividends': round(amount, 8)})
+                yearly_dividends.append({'year': year, 'stock': stock, 'dividends': amount})
 
         return yearly_dividends
 
@@ -83,9 +83,9 @@ class FinancialCalculator:
             # Find existing year entry or create new one
             year_entry = next((item for item in yearly_interest if item['year'] == year), None)
             if year_entry:
-                year_entry['interest'] = round(year_entry['interest'] + amount, 8)
+                year_entry['interest'] = round(year_entry['interest'] + amount, 8)  # Round accumulation
             else:
-                yearly_interest.append({'year': year, 'interest': round(amount, 8)})
+                yearly_interest.append({'year': year, 'interest': amount})
         
         return yearly_interest
     

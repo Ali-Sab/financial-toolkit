@@ -7,10 +7,10 @@ class Transaction:
         self.transaction_type = transaction_type  # BUY, SELL, DIV, TRFIN, TRFOUT, etc.
         self.symbol = symbol  # Stock ticker
         if currency == 'CAD':
-            self.amount = float(amount)
+            self.amount = round(float(amount), 8)
         else:
-            self.amount = float(amount) * get_exchange_rate(exchange_rates, date)
-        self.shares = float(shares) if shares is not None else None
+            self.amount = round(float(amount) * get_exchange_rate(exchange_rates, date), 8)
+        self.shares = round(float(shares), 8) if shares is not None else None
 
     def is_buy(self):
         return self.transaction_type == 'BUY'
